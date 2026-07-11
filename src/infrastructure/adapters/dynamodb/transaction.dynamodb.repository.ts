@@ -1,11 +1,12 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DynamoDBDocumentClient, PutCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { Transaction } from '../../../domain/entities/transaction.entity';
 import { TransactionRepositoryPort } from '../../../domain/ports/transaction.repository.port';
 import { TransactionType } from '../../../domain/enums/transaction-type.enum';
 import { TransactionStatus } from '../../../domain/enums/transaction-status.enum';
 import { DYNAMODB_CLIENT } from './dynamodb.provider';
+import { GetTransactionDto } from 'src/application/dtos/get-transaction.dto';
 
 @Injectable()
 export class TransactionDynamoDBRepository implements TransactionRepositoryPort {
@@ -15,6 +16,7 @@ export class TransactionDynamoDBRepository implements TransactionRepositoryPort 
   constructor(
     @Inject(DYNAMODB_CLIENT)
     private readonly dynamoDBClient: DynamoDBDocumentClient,
+    @Inject(ConfigService)
     private readonly configService: ConfigService,
   ) {
     this.tableName =
@@ -70,6 +72,49 @@ export class TransactionDynamoDBRepository implements TransactionRepositoryPort 
     } catch (error) {
       this.logger.error(
         `Failed to find transaction: ${id}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw error;
+    }
+  }
+
+  async findAll(query: GetTransactionDto): Promise<Transaction[]> {
+    let command;
+
+    if (query.accountId) {
+      command = new QueryCommand({
+        TableName: this.tableName,
+        IndexName: 'accountId-createdAt-index',
+        KeyConditionExpression: 'accountId = :accountId',
+        ExpressionAttributeValues: {
+          ':accountId': query.accountId,
+        },
+      });
+    } else {
+      command = new ScanCommand({
+        TableName: this.tableName,
+      });
+    }
+
+    try {
+      const result = await this.dynamoDBClient.send(command);
+
+      return result.Items?.map((item) =>
+        Transaction.fromPersistence({
+          id: item['id'] as string,
+          accountId: item['accountId'] as string,
+          type: item['type'] as TransactionType,
+          amount: item['amount'] as number,
+          currency: item['currency'] as string,
+          description: item['description'] as string,
+          status: item['status'] as TransactionStatus,
+          createdAt: item['createdAt'] as string,
+          updatedAt: item['updatedAt'] as string,
+        }),
+      ) ?? [];
+    } catch (error) {
+      this.logger.error(
+        'Failed to find all transactions',
         error instanceof Error ? error.stack : String(error),
       );
       throw error;

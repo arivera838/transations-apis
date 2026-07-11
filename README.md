@@ -178,6 +178,21 @@ npx serverless remove --stage dev
 
 ---
 
+## 📖 Documentación API (Swagger)
+
+La API cuenta con documentación interactiva generada con **Swagger** (OpenAPI). 
+
+### Acceso Local
+
+Cuando ejecutas la aplicación localmente (ya sea con NestJS standalone o con Serverless Offline), puedes acceder a la interfaz de Swagger en tu navegador:
+
+- **Standalone (`npm run start:dev`)**: [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
+- **Serverless Offline (`npx serverless offline`)**: [http://localhost:3000/dev/api/docs](http://localhost:3000/dev/api/docs)
+
+Desde esta interfaz podrás ver todos los endpoints disponibles, los esquemas de petición y respuesta (con los campos requeridos y opcionales), y probar la API directamente.
+
+---
+
 ## 📡 Endpoints
 
 ### `POST /api/v1/transactions`

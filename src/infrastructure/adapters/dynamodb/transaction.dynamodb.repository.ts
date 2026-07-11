@@ -68,6 +68,7 @@ export class TransactionDynamoDBRepository implements TransactionRepositoryPort 
         status: result.Item['status'] as TransactionStatus,
         createdAt: result.Item['createdAt'] as string,
         updatedAt: result.Item['updatedAt'] as string,
+        items: result.Item['items'] as { productId: string, quantity: number }[],
       });
     } catch (error) {
       this.logger.error(
@@ -110,6 +111,7 @@ export class TransactionDynamoDBRepository implements TransactionRepositoryPort 
           status: item['status'] as TransactionStatus,
           createdAt: item['createdAt'] as string,
           updatedAt: item['updatedAt'] as string,
+          items: item['items'] as { productId: string, quantity: number }[],
         }),
       ) ?? [];
     } catch (error) {

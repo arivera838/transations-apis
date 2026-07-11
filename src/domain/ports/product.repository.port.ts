@@ -6,6 +6,8 @@ export interface ProductRepositoryPort {
     lastEvaluatedKey?: string;
   }>;
   save(product: Product): Promise<Product>;
+  findById(id: string): Promise<Product | null>;
+  decrementStock(productId: string, quantity: number): Promise<void>;
 }
 
 export const PRODUCT_REPOSITORY_PORT = Symbol('ProductRepositoryPort');

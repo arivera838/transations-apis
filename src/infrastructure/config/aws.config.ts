@@ -7,5 +7,7 @@ export default registerAs('aws', () => ({
   dynamodb: {
     transactionsTable:
       process.env['DYNAMODB_TABLE_TRANSACTIONS'] ?? 'Transactions',
+    productsTable:
+      process.env['DYNAMODB_TABLE_PRODUCTS'] ?? 'Products',
   },
 }));

@@ -1,4 +1,5 @@
 import { createTransactionsTable } from '../src/infrastructure/migrations/001-create-transactions-table';
+import { createProductsTable } from '../src/infrastructure/migrations/002-create-products-table';
 
 async function runMigrations(): Promise<void> {
   console.log('='.repeat(50));
@@ -7,6 +8,7 @@ async function runMigrations(): Promise<void> {
 
   try {
     await createTransactionsTable();
+    await createProductsTable();
 
     console.log('\n' + '='.repeat(50));
     console.log('✅ All migrations completed successfully!');

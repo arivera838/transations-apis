@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { PaymentGatewayPort, PaymentGatewayResponse, PaymentMethodData } from '../../../domain/ports/payment.gateway.port';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
+import { TransactionStatus } from '../../../domain/enums/transaction-status.enum';
 
 @Injectable()
 export class WompiPaymentGateway implements PaymentGatewayPort {
@@ -10,7 +11,7 @@ export class WompiPaymentGateway implements PaymentGatewayPort {
   private readonly privateKey: string;
   private readonly integrityKey: string;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(@Inject(ConfigService) private readonly configService: ConfigService) {
     this.apiUrl = this.configService.get<string>('WOMPI_API_URL') || 'https://api-sandbox.co.uat.wompi.dev/v1';
     this.privateKey = this.configService.get<string>('WOMPI_PRIVATE_KEY') || 'prv_stagtest_5i0ZGIGiFcDQifYsXxvsny7Y37tKqFWg';
     this.integrityKey = this.configService.get<string>('WOMPI_INTEGRITY_KEY') || 'stagtest_integrity_nAIBuqayW70XpUqJS4qf4STYiISd89Fp';
@@ -25,7 +26,7 @@ export class WompiPaymentGateway implements PaymentGatewayPort {
     try {
       const amountInCents = Math.round(amount * 100);
       const reference = transactionId;
-      
+
       // Calculate integrity signature
       const signatureString = `${reference}${amountInCents}${currency}${this.integrityKey}`;
       const hash = crypto.createHash('sha256').update(signatureString).digest('hex');
@@ -54,6 +55,7 @@ export class WompiPaymentGateway implements PaymentGatewayPort {
       });
 
       const responseData = await response.json();
+      console.log("🚀 ~ WompiPaymentGateway ~ processPayment ~ responseData:", responseData)
 
       if (!response.ok) {
         this.logger.error(`Wompi payment failed for ${transactionId}: ${JSON.stringify(responseData)}`);
@@ -67,18 +69,30 @@ export class WompiPaymentGateway implements PaymentGatewayPort {
       const status = responseData.data?.status;
 
       // In sandbox it may be APPROVED, DECLINED, VOIDED, ERROR
-      if (status === 'APPROVED') {
+      if (status === TransactionStatus.APPROVED) {
         return {
           success: true,
+          status: TransactionStatus.APPROVED,
           gatewayTransactionId: wompiTransactionId,
-        };
-      } else {
-        return {
-          success: false,
-          gatewayTransactionId: wompiTransactionId,
-          error: `Payment status: ${status}`,
         };
       }
+
+      if (status === TransactionStatus.PENDING) {
+        return {
+          success: true,
+          status: TransactionStatus.PENDING,
+          gatewayTransactionId: wompiTransactionId,
+        };
+      }
+
+      return {
+        success: false,
+        status: status as TransactionStatus,
+        gatewayTransactionId: wompiTransactionId,
+        error: `Payment status: ${status}`,
+      };
+
+
     } catch (error) {
       this.logger.error(`Wompi payment error for ${transactionId}`, error instanceof Error ? error.stack : String(error));
       return {

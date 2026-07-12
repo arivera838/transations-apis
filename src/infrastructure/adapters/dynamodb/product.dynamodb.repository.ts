@@ -13,7 +13,7 @@ export class ProductDynamoDBRepository implements ProductRepositoryPort {
   constructor(
     @Inject(DYNAMODB_CLIENT)
     private readonly dynamoDBClient: DynamoDBDocumentClient,
-    private readonly configService: ConfigService,
+    @Inject(ConfigService) private readonly configService: ConfigService,
   ) {
     this.tableName =
       this.configService.get<string>('aws.dynamodb.productsTable') ??
@@ -43,7 +43,7 @@ export class ProductDynamoDBRepository implements ProductRepositoryPort {
   ): Promise<{ items: Product[]; lastEvaluatedKey?: string }> {
     const params: ScanCommandInput = {
       TableName: this.tableName,
-      Limit: limit || 10,
+      Limit: limit ? Number(limit) : 10,
     };
 
     if (lastEvaluatedKey) {

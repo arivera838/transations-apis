@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { configure as serverlessExpress } from '@codegenie/serverless-express';
 import { Callback, Context, Handler } from 'aws-lambda';
 import express from 'express';
@@ -34,6 +35,17 @@ async function bootstrap(): Promise<Handler> {
     nestApp.useGlobalInterceptors(new ResponseInterceptor());
 
     nestApp.enableCors();
+
+    const config = new DocumentBuilder()
+      .setTitle('Transaction API')
+      .setDescription('The Transaction API documentation')
+      .setVersion('1.0')
+      .addTag('transactions')
+      .addTag('products')
+      .build();
+    
+    const document = SwaggerModule.createDocument(nestApp, config);
+    SwaggerModule.setup('api/docs', nestApp, document);
 
     await nestApp.init();
 

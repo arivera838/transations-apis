@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Get, Query, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { CreateTransactionDto } from '../../application/dtos/create-transaction.dto';
 import { TransactionResponseDto } from '../../application/dtos/transaction-response.dto';
@@ -10,8 +10,8 @@ import { GetTransactionUseCase } from '../../application/use-cases/get-transacti
 @Controller('transactions')
 export class TransactionController {
   constructor(
-    private readonly createTransactionUseCase: CreateTransactionUseCase,
-    private readonly findAllTransactionUseCase: GetTransactionUseCase,
+    @Inject(CreateTransactionUseCase) private readonly createTransactionUseCase: CreateTransactionUseCase,
+    @Inject(GetTransactionUseCase) private readonly findAllTransactionUseCase: GetTransactionUseCase,
   ) { }
 
   @Post()

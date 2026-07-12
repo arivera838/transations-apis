@@ -82,6 +82,12 @@ PORT=3000
 npx ts-node migrations/run-migrations.ts
 ```
 
+### Crear productos seeders
+
+```bash
+npx ts-node migrations/seed-products.ts
+```
+
 Este script:
 - Verifica si la tabla `Transactions` ya existe
 - Si no existe, la crea con:

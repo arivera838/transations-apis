@@ -9,6 +9,7 @@ import { PRODUCT_REPOSITORY_PORT } from '../../domain/ports/product.repository.p
 import type { PaymentGatewayPort } from '../../domain/ports/payment.gateway.port';
 import { PAYMENT_GATEWAY_PORT } from '../../domain/ports/payment.gateway.port';
 import { InvalidTransactionException } from '../../domain/exceptions/domain.exception';
+import { TransactionStatus } from '../../domain/enums/transaction-status.enum';
 
 @Injectable()
 export class CreateTransactionUseCase {
@@ -19,11 +20,11 @@ export class CreateTransactionUseCase {
     private readonly productRepository: ProductRepositoryPort,
     @Inject(PAYMENT_GATEWAY_PORT)
     private readonly paymentGateway: PaymentGatewayPort,
-  ) {}
+  ) { }
 
   async execute(dto: CreateTransactionDto): Promise<TransactionResponseDto> {
     let calculatedAmount = 0;
-    
+
     // Verify products and calculate total amount
     for (const item of dto.items) {
       const product = await this.productRepository.findById(item.productId);
@@ -59,13 +60,19 @@ export class CreateTransactionUseCase {
       savedTransaction.currency,
       dto.paymentMethod
     );
+    console.log("🚀 ~ CreateTransactionUseCase ~ execute ~ paymentResult:", paymentResult)
 
     if (paymentResult.success && paymentResult.gatewayTransactionId) {
-      savedTransaction.markAsCompleted(paymentResult.gatewayTransactionId);
-      
-      // Decrement stock
-      for (const item of dto.items) {
-        await this.productRepository.decrementStock(item.productId, item.quantity);
+      if (paymentResult.status === TransactionStatus.APPROVED) {
+        savedTransaction.markAsCompleted(paymentResult.gatewayTransactionId);
+
+        // Decrement stock ONLY for APPROVED
+        for (const item of dto.items) {
+          await this.productRepository.decrementStock(item.productId, item.quantity);
+        }
+      } else if (paymentResult.status === TransactionStatus.PENDING) {
+        savedTransaction.setPaymentId(paymentResult.gatewayTransactionId);
+        // Keep status as PENDING
       }
     } else {
       savedTransaction.markAsFailed(paymentResult.gatewayTransactionId);

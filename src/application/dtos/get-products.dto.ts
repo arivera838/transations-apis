@@ -3,17 +3,17 @@ import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class GetProductsDto {
-  @ApiPropertyOptional({ description: 'Filter by product name' })
+  @ApiPropertyOptional({ type: String, description: 'Filter by product name' })
   @IsOptional()
   @IsString()
   name?: string;
 
-  @ApiPropertyOptional({ description: 'Pagination key for next page' })
+  @ApiPropertyOptional({ type: String, description: 'Pagination key for next page' })
   @IsOptional()
   @IsString()
   lastEvaluatedKey?: string;
 
-  @ApiPropertyOptional({ description: 'Limit number of results', example: 10 })
+  @ApiPropertyOptional({ type: Number, description: 'Limit number of results', example: 10 })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()

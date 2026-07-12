@@ -106,8 +106,13 @@ export class Transaction {
     };
   }
 
+  setPaymentId(paymentId: string) {
+    (this as any).paymentId = paymentId;
+    (this as any).updatedAt = new Date().toISOString();
+  }
+
   markAsCompleted(paymentId: string) {
-    (this as any).status = TransactionStatus.COMPLETED;
+    (this as any).status = TransactionStatus.APPROVED;
     (this as any).paymentId = paymentId;
     (this as any).updatedAt = new Date().toISOString();
   }

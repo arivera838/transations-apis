@@ -6,7 +6,7 @@ import { TransactionItemDto } from './transaction-item.dto';
 import { PaymentMethodDto } from './payment-method.dto';
 
 export class CreateTransactionDto {
-  @ApiProperty({ description: 'The ID of the account initiating the transaction', example: 'acc_12345' })
+  @ApiProperty({ type: String, description: 'The ID of the account initiating the transaction', example: 'acc_12345' })
   @IsString()
   @IsNotEmpty()
   accountId!: string;
@@ -17,17 +17,17 @@ export class CreateTransactionDto {
   })
   type!: TransactionType;
 
-  @ApiProperty({ description: 'Amount of the transaction in the specified currency', example: 150000 })
+  @ApiProperty({ type: Number, description: 'Amount of the transaction in the specified currency', example: 150000 })
   @IsNumber()
   @Min(0.01, { message: 'amount must be greater than 0' })
   amount!: number;
 
-  @ApiProperty({ description: '3-letter ISO currency code', example: 'COP' })
+  @ApiProperty({ type: String, description: '3-letter ISO currency code', example: 'COP' })
   @IsString()
   @Length(3, 3, { message: 'currency must be a 3-letter ISO code (e.g., USD, COP)' })
   currency!: string;
 
-  @ApiPropertyOptional({ description: 'Optional description of the transaction' })
+  @ApiPropertyOptional({ type: String, description: 'Optional description of the transaction' })
   @IsString()
   @IsOptional()
   description?: string;

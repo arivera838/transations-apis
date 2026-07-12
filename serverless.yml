@@ -35,12 +35,24 @@ provider:
 build:
   esbuild: false
 
+custom:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+    exclude:
+      - '@nestjs/websockets'
+      - '@nestjs/microservices'
+      - 'class-transformer'
+      - 'class-validator'
+
 plugins:
+  - serverless-esbuild
   - serverless-offline
 
 functions:
   api:
-    handler: dist/src/lambda.handler
+    handler: src/lambda.handler
     events:
       - http:
           method: ANY
@@ -63,6 +75,8 @@ resources:
             AttributeType: S
           - AttributeName: createdAt
             AttributeType: S
+          - AttributeName: paymentId
+            AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH
@@ -73,6 +87,12 @@ resources:
                 KeyType: HASH
               - AttributeName: createdAt
                 KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: paymentId-index
+            KeySchema:
+              - AttributeName: paymentId
+                KeyType: HASH
             Projection:
               ProjectionType: ALL
     ProductsTable:

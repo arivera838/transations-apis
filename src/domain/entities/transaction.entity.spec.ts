@@ -70,7 +70,7 @@ describe('Transaction Entity', () => {
       amount: 200,
       currency: 'EUR',
       description: 'Test',
-      status: TransactionStatus.COMPLETED,
+      status: TransactionStatus.APPROVED,
       createdAt: '2021-01-01T00:00:00.000Z',
       updatedAt: '2021-01-01T00:00:00.000Z',
       items: [{ productId: 'prod_1', quantity: 2 }]

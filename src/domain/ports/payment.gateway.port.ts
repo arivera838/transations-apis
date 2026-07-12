@@ -1,3 +1,5 @@
+import { TransactionStatus } from '../enums/transaction-status.enum';
+
 export interface PaymentMethodData {
   type: string;
   token: string;
@@ -7,6 +9,7 @@ export interface PaymentMethodData {
 
 export interface PaymentGatewayResponse {
   success: boolean;
+  status?: TransactionStatus;
   gatewayTransactionId?: string;
   error?: string;
 }

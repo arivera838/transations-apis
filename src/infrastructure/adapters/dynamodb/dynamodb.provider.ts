@@ -8,19 +8,26 @@ export const dynamoDBProviders = [
   {
     provide: DYNAMODB_CLIENT,
     useFactory: (configService: ConfigService): DynamoDBDocumentClient => {
-      const client = new DynamoDBClient({
-        region: configService.get<string>('aws.region'),
-        credentials: {
-          accessKeyId: configService.get<string>('aws.accessKeyId') ?? '',
-          secretAccessKey:
-            configService.get<string>('aws.secretAccessKey') ?? '',
-        },
-      });
+      const region = configService.get<string>('aws.region');
+      const accessKeyId = configService.get<string>('aws.accessKeyId');
+      const secretAccessKey = configService.get<string>('aws.secretAccessKey');
+
+      const config: any = { region };
+
+      if (accessKeyId && secretAccessKey) {
+        config.credentials = {
+          accessKeyId,
+          secretAccessKey,
+        };
+      }
+
+      const client = new DynamoDBClient(config);
 
       return DynamoDBDocumentClient.from(client, {
         marshallOptions: {
           removeUndefinedValues: true,
           convertEmptyValues: false,
+          convertClassInstanceToMap: true,
         },
         unmarshallOptions: {
           wrapNumbers: false,

@@ -1,25 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ProductResponseDto {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   id!: string;
-  @ApiProperty()
+  @ApiProperty({ type: String })
   name!: string;
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   price!: number;
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   stock!: number;
-  @ApiProperty()
+  @ApiProperty({ type: String })
   category!: string;
-  @ApiProperty()
+  @ApiProperty({ type: String })
   image!: string;
-  @ApiProperty()
+  @ApiProperty({ type: String })
   createdAt!: string;
 }
 
 export class PaginatedProductsResponseDto {
   @ApiProperty({ type: [ProductResponseDto] })
   items!: ProductResponseDto[];
-  @ApiProperty({ required: false })
+  @ApiProperty({ type: String, required: false })
   lastEvaluatedKey?: string;
 }

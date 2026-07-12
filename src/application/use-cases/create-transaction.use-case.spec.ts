@@ -19,6 +19,8 @@ describe('CreateTransactionUseCase', () => {
       save: jest.fn(),
       findAll: jest.fn(),
       findById: jest.fn(),
+      findByPaymentId: jest.fn(),
+      updateStatus: jest.fn(),
     };
     mockProductRepository = {
       save: jest.fn(),
@@ -64,14 +66,14 @@ describe('CreateTransactionUseCase', () => {
 
     mockProductRepository.findById.mockResolvedValue(mockProduct);
     mockTransactionRepository.save.mockImplementation(async (tx) => tx);
-    mockPaymentGateway.processPayment.mockResolvedValue({ success: true, gatewayTransactionId: 'gw_123' });
+    mockPaymentGateway.processPayment.mockResolvedValue({ success: true, status: TransactionStatus.APPROVED, gatewayTransactionId: 'gw_123' });
 
     const result = await useCase.execute(dto);
 
     expect(result).toBeDefined();
     expect(result.id).toBeDefined();
     expect(result.accountId).toBe('acc_123');
-    expect(result.status).toBe(TransactionStatus.COMPLETED);
+    expect(result.status).toBe(TransactionStatus.APPROVED);
     expect(result.paymentId).toBe('gw_123');
 
     // First save for PENDING, second save for COMPLETED
@@ -135,7 +137,7 @@ describe('CreateTransactionUseCase', () => {
     const mockProduct = Product.fromPersistence({ id: 'prod_1', name: 'A', price: 75, stock: 10, category: 'C', image: 'I', createdAt: '' });
     mockProductRepository.findById.mockResolvedValue(mockProduct);
     mockTransactionRepository.save.mockImplementation(async (tx) => tx);
-    mockPaymentGateway.processPayment.mockResolvedValue({ success: false, gatewayTransactionId: 'gw_error' });
+    mockPaymentGateway.processPayment.mockResolvedValue({ success: false, status: TransactionStatus.FAILED, gatewayTransactionId: 'gw_error' });
 
     const result = await useCase.execute(dto);
     expect(result.status).toBe(TransactionStatus.FAILED);

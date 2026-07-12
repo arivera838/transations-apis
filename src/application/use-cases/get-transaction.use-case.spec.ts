@@ -14,6 +14,8 @@ describe('GetTransactionUseCase', () => {
       save: jest.fn(),
       findAll: jest.fn(),
       findById: jest.fn(),
+      findByPaymentId: jest.fn(),
+      updateStatus: jest.fn(),
     };
     useCase = new GetTransactionUseCase(mockRepository);
   });

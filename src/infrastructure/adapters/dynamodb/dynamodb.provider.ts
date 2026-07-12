@@ -14,10 +14,13 @@ export const dynamoDBProviders = [
 
       const config: any = { region };
 
+      const sessionToken = process.env['AWS_SESSION_TOKEN'];
+
       if (accessKeyId && secretAccessKey) {
         config.credentials = {
           accessKeyId,
           secretAccessKey,
+          ...(sessionToken && { sessionToken }),
         };
       }
 

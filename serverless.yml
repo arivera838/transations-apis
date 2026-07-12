@@ -11,8 +11,12 @@ provider:
   timeout: 15
   environment:
     NODE_ENV: ${self:provider.stage}
-    DYNAMODB_TABLE_TRANSACTIONS: ${self:service}-transactions-${self:provider.stage}
-    DYNAMODB_TABLE_PRODUCTS: ${self:service}-products-${self:provider.stage}
+    DYNAMODB_TABLE_TRANSACTIONS: transaction-api-transactions-${self:provider.stage}
+    DYNAMODB_TABLE_PRODUCTS: transaction-api-products-${self:provider.stage}
+    WOMPI_API_URL: https://api-sandbox.co.uat.wompi.dev/v1
+    WOMPI_PRIVATE_KEY: prv_stagtest_5i0ZGIGiFcDQifYsXxvsny7Y37tKqFWg
+    WOMPI_INTEGRITY_KEY: stagtest_integrity_nAIBuqayW70XpUqJS4qf4STYiISd89Fp
+    WOMPI_EVENTS_SECRET: stagtest_events_2PDUmhMywUkvb1LvxYnayFbmofT7w39N
   iam:
     role:
       statements:
@@ -25,29 +29,22 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource:
-            - !GetAtt TransactionsTable.Arn
-            - !Join
-              - ''
-              - - !GetAtt TransactionsTable.Arn
-                - '/index/*'
-            - !GetAtt ProductsTable.Arn
+            - arn:aws:dynamodb:${self:provider.region}:*:table/transaction-api-transactions-${self:provider.stage}
+            - arn:aws:dynamodb:${self:provider.region}:*:table/transaction-api-transactions-${self:provider.stage}/index/*
+            - arn:aws:dynamodb:${self:provider.region}:*:table/transaction-api-products-${self:provider.stage}
 
 build:
-  esbuild: false
-
-custom:
   esbuild:
     bundle: true
     minify: true
     sourcemap: false
-    exclude:
-      - '@nestjs/websockets'
+    external:
+      - '@nestjs/websockets/socket-module'
+      - '@nestjs/microservices/microservices-module'
       - '@nestjs/microservices'
-      - 'class-transformer'
-      - 'class-validator'
+      - 'class-transformer/storage'
 
 plugins:
-  - serverless-esbuild
   - serverless-offline
 
 functions:
@@ -55,54 +52,8 @@ functions:
     handler: src/lambda.handler
     events:
       - http:
-          method: ANY
           path: /
-      - http:
           method: ANY
-          path: '{proxy+}'
-
-resources:
-  Resources:
-    TransactionsTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:service}-transactions-${self:provider.stage}
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S
-          - AttributeName: accountId
-            AttributeType: S
-          - AttributeName: createdAt
-            AttributeType: S
-          - AttributeName: paymentId
-            AttributeType: S
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
-        GlobalSecondaryIndexes:
-          - IndexName: accountId-createdAt-index
-            KeySchema:
-              - AttributeName: accountId
-                KeyType: HASH
-              - AttributeName: createdAt
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-          - IndexName: paymentId-index
-            KeySchema:
-              - AttributeName: paymentId
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-    ProductsTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:service}-products-${self:provider.stage}
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
+      - http:
+          path: /{proxy+}
+          method: ANY

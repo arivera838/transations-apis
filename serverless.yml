@@ -57,3 +57,43 @@ functions:
       - http:
           path: /{proxy+}
           method: ANY
+
+
+resources:
+  Resources:
+    TransactionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: transaction-api-transactions-dev
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: accountId
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: accountId-createdAt-index
+            KeySchema:
+              - AttributeName: accountId
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    ProductsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: transaction-api-products-dev
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH

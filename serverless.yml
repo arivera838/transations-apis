@@ -1,0 +1,59 @@
+service: transaction-api
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ${env:AWS_REGION, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  memorySize: 512
+  timeout: 15
+  environment:
+    NODE_ENV: ${self:provider.stage}
+    DYNAMODB_TABLE_TRANSACTIONS: transaction-api-transactions-${self:provider.stage}
+    DYNAMODB_TABLE_PRODUCTS: transaction-api-products-${self:provider.stage}
+    WOMPI_API_URL: https://api-sandbox.co.uat.wompi.dev/v1
+    WOMPI_PRIVATE_KEY: prv_stagtest_5i0ZGIGiFcDQifYsXxvsny7Y37tKqFWg
+    WOMPI_INTEGRITY_KEY: stagtest_integrity_nAIBuqayW70XpUqJS4qf4STYiISd89Fp
+    WOMPI_EVENTS_SECRET: stagtest_events_2PDUmhMywUkvb1LvxYnayFbmofT7w39N
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - arn:aws:dynamodb:${self:provider.region}:*:table/transaction-api-transactions-${self:provider.stage}
+            - arn:aws:dynamodb:${self:provider.region}:*:table/transaction-api-transactions-${self:provider.stage}/index/*
+            - arn:aws:dynamodb:${self:provider.region}:*:table/transaction-api-products-${self:provider.stage}
+
+build:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+    external:
+      - '@nestjs/websockets/socket-module'
+      - '@nestjs/microservices/microservices-module'
+      - '@nestjs/microservices'
+      - 'class-transformer/storage'
+
+plugins:
+  - serverless-offline
+
+functions:
+  api:
+    handler: src/lambda.handler
+    events:
+      - http:
+          path: /
+          method: ANY
+      - http:
+          path: /{proxy+}
+          method: ANY

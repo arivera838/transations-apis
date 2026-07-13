@@ -68,6 +68,7 @@ export class TransactionDynamoDBRepository implements TransactionRepositoryPort 
         status: result.Item['status'] as TransactionStatus,
         createdAt: result.Item['createdAt'] as string,
         updatedAt: result.Item['updatedAt'] as string,
+        items: result.Item['items'] as { productId: string, quantity: number }[],
       });
     } catch (error) {
       this.logger.error(
@@ -110,11 +111,74 @@ export class TransactionDynamoDBRepository implements TransactionRepositoryPort 
           status: item['status'] as TransactionStatus,
           createdAt: item['createdAt'] as string,
           updatedAt: item['updatedAt'] as string,
+          items: item['items'] as { productId: string, quantity: number }[],
         }),
       ) ?? [];
     } catch (error) {
       this.logger.error(
         'Failed to find all transactions',
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw error;
+    }
+  }
+
+  async findByPaymentId(paymentId: string): Promise<Transaction | null> {
+    const command = new QueryCommand({
+      TableName: this.tableName,
+      IndexName: 'paymentId-index',
+      KeyConditionExpression: 'paymentId = :paymentId',
+      ExpressionAttributeValues: {
+        ':paymentId': paymentId,
+      },
+    });
+
+    try {
+      const result = await this.dynamoDBClient.send(command);
+      
+      if (!result.Items || result.Items.length === 0) {
+        return null;
+      }
+
+      const item = result.Items[0];
+      return Transaction.fromPersistence({
+        id: item['id'] as string,
+        accountId: item['accountId'] as string,
+        type: item['type'] as TransactionType,
+        amount: item['amount'] as number,
+        currency: item['currency'] as string,
+        description: item['description'] as string,
+        status: item['status'] as TransactionStatus,
+        createdAt: item['createdAt'] as string,
+        updatedAt: item['updatedAt'] as string,
+        paymentId: item['paymentId'] as string,
+        items: item['items'] as { productId: string, quantity: number }[],
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to find transaction by paymentId: ${paymentId}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw error;
+    }
+  }
+
+  async updateStatus(id: string, status: TransactionStatus): Promise<void> {
+    const command = new PutCommand({
+      TableName: this.tableName,
+      Item: {
+        ...(await this.findById(id))?.toPrimitives(),
+        status,
+        updatedAt: new Date().toISOString(),
+      },
+    });
+
+    try {
+      await this.dynamoDBClient.send(command);
+      this.logger.log(`Transaction ${id} status updated to ${status}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to update status for transaction ${id}`,
         error instanceof Error ? error.stack : String(error),
       );
       throw error;

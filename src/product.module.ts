@@ -13,6 +13,6 @@ import { PRODUCT_REPOSITORY_PORT } from './domain/ports/product.repository.port'
       useClass: ProductDynamoDBRepository,
     },
   ],
-  exports: [GetProductsUseCase],
+  exports: [GetProductsUseCase, PRODUCT_REPOSITORY_PORT],
 })
 export class ProductModule {}

@@ -11,6 +11,8 @@ export class Transaction {
   readonly currency: string;
   readonly description: string;
   readonly status: TransactionStatus;
+  readonly items: { productId: string; quantity: number }[];
+  readonly paymentId?: string;
   readonly createdAt: string;
   readonly updatedAt: string;
 
@@ -22,6 +24,8 @@ export class Transaction {
     currency: string;
     description: string;
     status: TransactionStatus;
+    items: { productId: string; quantity: number }[];
+    paymentId?: string;
     createdAt: string;
     updatedAt: string;
   }) {
@@ -32,6 +36,8 @@ export class Transaction {
     this.currency = props.currency;
     this.description = props.description;
     this.status = props.status;
+    this.items = props.items;
+    this.paymentId = props.paymentId;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
   }
@@ -41,6 +47,7 @@ export class Transaction {
     type: TransactionType;
     amount: number;
     currency: string;
+    items: { productId: string; quantity: number }[];
     description?: string;
   }): Transaction {
     if (props.amount <= 0) {
@@ -61,6 +68,7 @@ export class Transaction {
       currency: props.currency.toUpperCase(),
       description: props.description ?? '',
       status: TransactionStatus.PENDING,
+      items: props.items,
       createdAt: now,
       updatedAt: now,
     });
@@ -74,6 +82,8 @@ export class Transaction {
     currency: string;
     description: string;
     status: TransactionStatus;
+    items: { productId: string; quantity: number }[];
+    paymentId?: string;
     createdAt: string;
     updatedAt: string;
   }): Transaction {
@@ -89,8 +99,29 @@ export class Transaction {
       currency: this.currency,
       description: this.description,
       status: this.status,
+      items: this.items,
+      paymentId: this.paymentId,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };
+  }
+
+  setPaymentId(paymentId: string) {
+    (this as any).paymentId = paymentId;
+    (this as any).updatedAt = new Date().toISOString();
+  }
+
+  markAsCompleted(paymentId: string) {
+    (this as any).status = TransactionStatus.APPROVED;
+    (this as any).paymentId = paymentId;
+    (this as any).updatedAt = new Date().toISOString();
+  }
+
+  markAsFailed(paymentId?: string) {
+    (this as any).status = TransactionStatus.FAILED;
+    if (paymentId) {
+      (this as any).paymentId = paymentId;
+    }
+    (this as any).updatedAt = new Date().toISOString();
   }
 }

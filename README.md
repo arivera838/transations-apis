@@ -213,9 +213,21 @@ curl -X POST https://<api-id>.execute-api.us-east-1.amazonaws.com/dev/api/v1/tra
   -d '{
     "accountId": "ACC-001",
     "type": "CREDIT",
-    "amount": 150.50,
-    "currency": "USD",
-    "description": "Depósito inicial"
+    "amount": 150000,
+    "currency": "COP",
+    "description": "Depósito inicial",
+    "items": [
+      {
+        "productId": "prod_12345",
+        "quantity": 2
+      }
+    ],
+    "paymentMethod": {
+      "type": "CARD",
+      "token": "tok_test_12345",
+      "customerEmail": "customer@example.com",
+      "acceptanceToken": "acc_test_12345"
+    }
   }'
 ```
 
@@ -228,10 +240,17 @@ curl -X POST https://<api-id>.execute-api.us-east-1.amazonaws.com/dev/api/v1/tra
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "accountId": "ACC-001",
     "type": "CREDIT",
-    "amount": 150.50,
-    "currency": "USD",
+    "amount": 150000,
+    "currency": "COP",
     "description": "Depósito inicial",
     "status": "PENDING",
+    "items": [
+      {
+        "productId": "prod_12345",
+        "quantity": 2
+      }
+    ],
+    "paymentId": "500-123-456",
     "createdAt": "2026-07-10T20:00:00.000Z",
     "updatedAt": "2026-07-10T20:00:00.000Z"
   },
@@ -248,6 +267,8 @@ curl -X POST https://<api-id>.execute-api.us-east-1.amazonaws.com/dev/api/v1/tra
 | `amount` | number | ✅ | Monto > 0 |
 | `currency` | string | ✅ | Código ISO 3 letras (ej: `USD`, `COP`) |
 | `description` | string | ❌ | Descripción de la transacción |
+| `items` | array | ✅ | Productos a comprar y sus cantidades (`productId`, `quantity`) |
+| `paymentMethod` | object | ✅ | Datos de pago tokenizados de Wompi (`type`, `token`, `customerEmail`, `acceptanceToken`) |
 
 **Respuesta de error (400 Bad Request):**
 

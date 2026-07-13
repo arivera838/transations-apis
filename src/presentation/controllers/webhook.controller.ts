@@ -1,15 +1,21 @@
 import { Body, Controller, HttpCode, Post, Logger, Headers, Inject } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { ProcessWompiWebhookUseCase } from '../../application/use-cases/process-wompi-webhook.use-case';
+import { WompiWebhookDto } from '../../application/dtos/wompi-webhook.dto';
 
+@ApiTags('webhook')
 @Controller('webhook')
 export class WebhookController {
   private readonly logger = new Logger(WebhookController.name);
 
-  constructor(@Inject(ProcessWompiWebhookUseCase) private readonly processWompiWebhookUseCase: ProcessWompiWebhookUseCase) {}
+  constructor(@Inject(ProcessWompiWebhookUseCase) private readonly processWompiWebhookUseCase: ProcessWompiWebhookUseCase) { }
 
   @Post()
   @HttpCode(200)
-  async handleWompiWebhook(@Body() payload: any, @Headers() headers: any) {
+  @ApiOperation({ summary: 'Handle Wompi transaction status updates' })
+  @ApiBody({ type: WompiWebhookDto })
+  @ApiResponse({ status: 200, description: 'Webhook received successfully' })
+  async handleWompiWebhook(@Body() payload: WompiWebhookDto, @Headers() headers: any) {
     this.logger.log('Received webhook request');
     try {
       await this.processWompiWebhookUseCase.execute(payload);

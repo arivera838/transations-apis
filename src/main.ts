@@ -31,7 +31,7 @@ async function bootstrap(): Promise<void> {
     .addTag('transactions')
     .addTag('products')
     .build();
-  
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 

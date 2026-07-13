@@ -150,8 +150,8 @@ service: transaction-api
 stage: dev
 region: us-east-1
 endpoints:
-  ANY - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/dev/
-  ANY - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/dev/{proxy+}
+  ANY - https://y31yay02zk.execute-api.us-east-1.amazonaws.com/dev/
+  ANY - https://y31yay02zk.execute-api.us-east-1.amazonaws.com/dev/{proxy+}
 functions:
   api: transaction-api-dev-api
 ```
@@ -184,18 +184,27 @@ npx serverless remove --stage dev
 
 ---
 
-## 📖 Documentación API (Swagger)
+## 📖 Documentación API (OpenAPI)
 
-La API cuenta con documentación interactiva generada con **Swagger** (OpenAPI). 
+La API cuenta con documentación interactiva generada con **OpenAPI**. 
+
+### Entorno Desplegado
+
+Puedes acceder a la API desplegada en AWS en la siguiente URL base:
+- **Producción / Dev**: `https://y31yay02zk.execute-api.us-east-1.amazonaws.com/dev`
 
 ### Acceso Local
 
-Cuando ejecutas la aplicación localmente (ya sea con NestJS standalone o con Serverless Offline), puedes acceder a la interfaz de Swagger en tu navegador:
+Cuando ejecutas la aplicación localmente (ya sea con NestJS standalone o con Serverless Offline), puedes acceder a la interfaz de OpenAPI en tu navegador:
 
 - **Standalone (`npm run start:dev`)**: [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
 - **Serverless Offline (`npx serverless offline`)**: [http://localhost:3000/dev/api/docs](http://localhost:3000/dev/api/docs)
 
 Desde esta interfaz podrás ver todos los endpoints disponibles, los esquemas de petición y respuesta (con los campos requeridos y opcionales), y probar la API directamente.
+
+### Enlaces Directos a Documentación de Endpoints
+
+- **Webhook de Wompi**: [Documentación del Webhook](https://y31yay02zk.execute-api.us-east-1.amazonaws.com/dev/api/docs#/webhook/Xu_handleWompiWebhook)
 
 ---
 
@@ -208,7 +217,7 @@ Registra una nueva transacción.
 **Request:**
 
 ```bash
-curl -X POST https://<api-id>.execute-api.us-east-1.amazonaws.com/dev/api/v1/transactions \
+curl -X POST https://y31yay02zk.execute-api.us-east-1.amazonaws.com/dev/api/v1/transactions \
   -H "Content-Type: application/json" \
   -d '{
     "accountId": "ACC-001",
@@ -294,6 +303,8 @@ npm run build          # Compilar TypeScript
 npm run start:prod     # Ejecutar build compilado
 npm run lint           # Linter
 npm run test           # Tests unitarios
+npm run deploy         # Deploy a AWS Lambda
+npm run offline        # Ejecutar localmente en emulador de AWS Lambda
 ```
 
 ---

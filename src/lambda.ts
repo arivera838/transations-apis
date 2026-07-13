@@ -43,9 +43,17 @@ async function bootstrap(): Promise<Handler> {
       .addTag('transactions')
       .addTag('products')
       .build();
-    
+
     const document = SwaggerModule.createDocument(nestApp, config);
-    SwaggerModule.setup('api/docs', nestApp, document);
+    SwaggerModule.setup('api/docs', nestApp, document, {
+      customSiteTitle: 'API Docs',
+      customJs: [
+        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-bundle.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-standalone-preset.js',
+      ],
+      customCssUrl:
+        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css',
+    });
 
     await nestApp.init();
 
